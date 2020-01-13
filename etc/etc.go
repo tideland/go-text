@@ -203,7 +203,10 @@ func (e *Etc) Split(path string) (*Etc, error) {
 	if err != nil {
 		return nil, failure.Annotate(err, "cannot split configuration")
 	}
-	values.At(fullPath[len(fullPath)-1:]...).SetKey("etc")
+	_, err = values.At(fullPath[len(fullPath)-1:]...).SetKey("etc")
+	if err != nil {
+		return nil, failure.Annotate(err, "cannot split configuration")
+	}
 	es := &Etc{
 		values: values,
 	}
@@ -257,21 +260,39 @@ func (e *Etc) Write(target io.Writer, prettyPrint bool) error {
 		doDepth := len(ks)
 		tag := ks[doDepth-1]
 		for i := depth; i > doDepth; i-- {
-			builder.EndTagNode()
+			if err := builder.EndTagNode(); err != nil {
+				return err
+			}
 		}
 		switch {
 		case doDepth > depth:
-			builder.BeginTagNode(tag)
-			builder.TextNode(v)
+			if err := builder.BeginTagNode(tag); err != nil {
+				return err
+			}
+			if err := builder.TextNode(v); err != nil {
+				return err
+			}
 			depth = doDepth
 		case doDepth == depth:
-			builder.EndTagNode()
-			builder.BeginTagNode(tag)
-			builder.TextNode(v)
+			if err := builder.EndTagNode(); err != nil {
+				return err
+			}
+			if err := builder.BeginTagNode(tag); err != nil {
+				return err
+			}
+			if err := builder.TextNode(v); err != nil {
+				return err
+			}
 		case doDepth < depth:
-			builder.EndTagNode()
-			builder.BeginTagNode(tag)
-			builder.TextNode(v)
+			if err := builder.EndTagNode(); err != nil {
+				return err
+			}
+			if err := builder.BeginTagNode(tag); err != nil {
+				return err
+			}
+			if err := builder.TextNode(v); err != nil {
+				return err
+			}
 			depth = doDepth
 		}
 		return nil
@@ -280,7 +301,9 @@ func (e *Etc) Write(target io.Writer, prettyPrint bool) error {
 		return err
 	}
 	for i := depth; i > 0; i-- {
-		builder.EndTagNode()
+		if err := builder.EndTagNode(); err != nil {
+			return err
+		}
 	}
 	root, err := builder.Root()
 	if err != nil {

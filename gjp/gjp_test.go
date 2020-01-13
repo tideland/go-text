@@ -44,7 +44,8 @@ func TestClear(t *testing.T) {
 	doc, err := gjp.Parse(bs, "/")
 	assert.Nil(err)
 	doc.Clear()
-	doc.SetValueAt("/", "foo")
+	err = doc.SetValueAt("/", "foo")
+	assert.NoError(err)
 	foo := doc.ValueAt("/").AsString("<undefined>")
 	assert.Equal(foo, "foo")
 }

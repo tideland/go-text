@@ -147,7 +147,7 @@ var tests = []struct {
 	injector: func(s *scroller.Scroller, rs *readSeeker) func([]string) {
 		return func(lines []string) {
 			if len(lines) == 25 {
-				s.Stop()
+				_ = s.Stop()
 			}
 		}
 	},
@@ -377,7 +377,8 @@ func newReceiver(assert *asserts.Asserts, data []string) *receiver {
 
 func (r *receiver) autoClose(scroller *scroller.Scroller) {
 	go func() {
-		scroller.Wait()
+		// Error of Wait() can be ignored here. Will be tested later.
+		_ = scroller.Wait()
 		r.writer.Close()
 	}()
 }

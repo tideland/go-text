@@ -104,7 +104,9 @@ func (tn *tagNode) ProcessWith(p Processor) error {
 func (tn *tagNode) String() string {
 	var buf bytes.Buffer
 	context := NewWriterContext(NewStandardSMLWriter(), &buf, true, "\t")
-	WriteSML(tn, context)
+	if err := WriteSML(tn, context); err != nil {
+		panic(err)
+	}
 	return buf.String()
 }
 

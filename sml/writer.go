@@ -179,17 +179,23 @@ func (w *mlWriter) activePlugin() WriterProcessor {
 func (w *mlWriter) writeIndent(open bool) {
 	if w.context.prettyPrint {
 		for i := 0; i < w.indent; i++ {
-			w.context.Writef(w.context.indentStr)
+			if err := w.context.Writef(w.context.indentStr); err != nil {
+				panic(err)
+			}
 		}
 	} else if open {
-		w.context.Writef(" ")
+		if err := w.context.Writef(" "); err != nil {
+			panic(err)
+		}
 	}
 }
 
 // writeNewline writes a newline if wanted.
 func (w *mlWriter) writeNewline() {
 	if w.context.prettyPrint {
-		w.context.Writef("\n")
+		if err := w.context.Writef("\n"); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -277,12 +283,18 @@ func (w *xmlWriter) SetContext(ctx *WriterContext) {
 
 // OpenTag writes the opening of a tag.
 func (w *xmlWriter) OpenTag(tag []string) error {
-	w.context.Writef("<%s", tag[0])
+	if err := w.context.Writef("<%s", tag[0]); err != nil {
+		return err
+	}
 	if len(tag) > 1 {
-		w.context.Writef(" id=%q", tag[1])
+		if err := w.context.Writef(" id=%q", tag[1]); err != nil {
+			return err
+		}
 	}
 	if len(tag) > 2 {
-		w.context.Writef(" class=%q", tag[2])
+		if err := w.context.Writef(" class=%q", tag[2]); err != nil {
+			return err
+		}
 	}
 	return w.context.Writef(">")
 }

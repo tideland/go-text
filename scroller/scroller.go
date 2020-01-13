@@ -274,8 +274,8 @@ SeekLoop:
 		buffer = buffer[0:end]
 	}
 	// Final positioning.
-	s.source.Seek(seekPos, io.SeekStart)
-	return nil
+	_, err = s.source.Seek(seekPos, io.SeekStart)
+	return err
 }
 
 // readLine reads the next valid line from the reader, even if it is
@@ -302,7 +302,9 @@ func (s *Scroller) readLine() ([]byte, error) {
 		case io.EOF:
 			// Reached EOF without a delimiter,
 			// so step back for next time.
-			s.source.Seek(-int64(len(line)), io.SeekCurrent)
+			if _, serr := s.source.Seek(-int64(len(line)), io.SeekCurrent); serr != nil {
+				return nil, serr
+			}
 			return nil, err
 		default:
 			return nil, err

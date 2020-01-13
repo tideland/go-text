@@ -136,7 +136,9 @@ func (mr *mlReader) readTagChildren() error {
 			}
 		default:
 			mr.index--
-			mr.reader.UnreadRune()
+			if err = mr.reader.UnreadRune(); err != nil {
+				return err
+			}
 			if err = mr.readTextNode(); err != nil {
 				return err
 			}
@@ -155,7 +157,9 @@ func (mr *mlReader) readBracedContent() error {
 		return failure.New("unexpected end of file while reading a tag or raw node")
 	case rc == rcTag:
 		mr.index--
-		mr.reader.UnreadRune()
+		if err = mr.reader.UnreadRune(); err != nil {
+			return err
+		}
 		return mr.readTagNode()
 	case rc == rcExclamation:
 		return mr.readRawNode()
@@ -233,7 +237,9 @@ func (mr *mlReader) readTextNode() error {
 			return failure.New("unexpected end of file while reading a text node")
 		case rc == rcOpen || rc == rcClose:
 			mr.index--
-			mr.reader.UnreadRune()
+			if err = mr.reader.UnreadRune(); err != nil {
+				return err
+			}
 			return mr.builder.TextNode(buf.String())
 		case rc == rcEscape:
 			r, rc, err = mr.readRune()

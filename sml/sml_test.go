@@ -80,8 +80,8 @@ func TestWriterProcessing(t *testing.T) {
 	ctxA := sml.NewWriterContext(sml.NewStandardSMLWriter(), bufA, true, "    ")
 	ctxB := sml.NewWriterContext(sml.NewStandardSMLWriter(), bufB, false, "")
 
-	sml.WriteSML(root, ctxA)
-	sml.WriteSML(root, ctxB)
+	assert.NoError(sml.WriteSML(root, ctxA))
+	assert.NoError(sml.WriteSML(root, ctxB))
 
 	assert.Logf("===== WITH INDENT =====")
 	assert.Logf(bufA.String())
@@ -107,7 +107,7 @@ func TestPositiveNodeReading(t *testing.T) {
 
 	buf := bytes.NewBufferString("")
 	ctx := sml.NewWriterContext(sml.NewStandardSMLWriter(), buf, true, "    ")
-	sml.WriteSML(root, ctx)
+	assert.NoError(sml.WriteSML(root, ctx))
 
 	assert.Logf("===== PARSED SML =====")
 	assert.Logf(buf.String())
@@ -172,8 +172,8 @@ for foo := 0; foo < 42; foo++ {
 
 	buf := bytes.NewBufferString("")
 	ctx := sml.NewWriterContext(sml.NewXMLWriter("pre"), buf, true, "    ")
-	ctx.Register("li", newLIWriter())
-	sml.WriteSML(root, ctx)
+	assert.NoError(ctx.Register("li", newLIWriter()))
+	assert.NoError(sml.WriteSML(root, ctx))
 
 	assert.Logf("===== XML =====")
 	assert.Logf(buf.String())
@@ -186,33 +186,34 @@ for foo := 0; foo < 42; foo++ {
 
 // Create a node structure.
 func createNodeStructure(assert *asserts.Asserts) sml.Node {
+	check := assert.NoError
 	builder := sml.NewNodeBuilder()
 
-	builder.BeginTagNode("root")
+	check(builder.BeginTagNode("root"))
 
-	builder.TextNode("Text A")
-	builder.TextNode("Text B")
-	builder.CommentNode("A first comment.")
+	check(builder.TextNode("Text A"))
+	check(builder.TextNode("Text B"))
+	check(builder.CommentNode("A first comment."))
 
-	builder.BeginTagNode("sub-a:1st:important")
-	builder.TextNode("Text A.A")
-	builder.CommentNode("A second comment.")
-	builder.EndTagNode()
+	check(builder.BeginTagNode("sub-a:1st:important"))
+	check(builder.TextNode("Text A.A"))
+	check(builder.CommentNode("A second comment."))
+	check(builder.EndTagNode())
 
-	builder.BeginTagNode("sub-b:2nd")
-	builder.TextNode("Text B.A")
-	builder.BeginTagNode("text")
-	builder.TextNode("Any text with the special characters {, }, and ^.")
-	builder.EndTagNode()
-	builder.EndTagNode()
+	check(builder.BeginTagNode("sub-b:2nd"))
+	check(builder.TextNode("Text B.A"))
+	check(builder.BeginTagNode("text"))
+	check(builder.TextNode("Any text with the special characters {, }, and ^."))
+	check(builder.EndTagNode())
+	check(builder.EndTagNode())
 
-	builder.BeginTagNode("sub-c")
-	builder.TextNode("Before raw.")
-	builder.RawNode("func Test(i int) { println(i) }")
-	builder.TextNode("After raw.")
-	builder.EndTagNode()
+	check(builder.BeginTagNode("sub-c"))
+	check(builder.TextNode("Before raw."))
+	check(builder.RawNode("func Test(i int) { println(i) }"))
+	check(builder.TextNode("After raw."))
+	check(builder.EndTagNode())
 
-	builder.EndTagNode()
+	check(builder.EndTagNode())
 
 	root, err := builder.Root()
 	assert.Nil(err)
