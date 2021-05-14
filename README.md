@@ -13,6 +13,7 @@
 
 * `etc` manages configurations including internel references to environment variables, cross references, and extraction of subtrees for using types; syntax is `sml` (see below)
 * `gjp` is the generic JSON processing without static type marshalling
+* `dynjson` will be the `gjp` succcessor, which will be deprecated
 * `scroller` helps analyzing a continuously written line by line text content like log files
 * `sml` is the simple markup language, a LISP like notation using curly braces
 * `stringex` enhances the functionality of the standard library package `strings`
