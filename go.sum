@@ -7,3 +7,4 @@ tideland.dev/go/together v0.0.0-20200110213028-8f143e2737a6 h1:RcwIrnqp20h2CJUVI
 tideland.dev/go/together v0.0.0-20200110213028-8f143e2737a6/go.mod h1:g+TjCwnKorfsYdJk0XwGYeP3mxSvF1MbnWoQpKk3Y+U=
 tideland.dev/go/trace v0.0.0-20200110203012-77bd5be58e01 h1:KKlJTuzV2lnWnnI2dY6loIO1iHxnL9+akHnXrTVY8wc=
 tideland.dev/go/trace v0.0.0-20200110203012-77bd5be58e01/go.mod h1:f6HlDKt+dTy8DOdvnKmjcqi9EinZ5IZW/zCpAoPUubs=
+tideland.dev/go/trace v0.3.0/go.mod h1:pHdg+nMRNyIVXEA/1Xf5UX8Od51KHk8QNCIw1m3kYrM=
