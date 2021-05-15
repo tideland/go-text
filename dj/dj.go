@@ -5,7 +5,7 @@
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
 
-package dynjson // import "tideland.dev/go/text/dynjson"
+package dj // import "tideland.dev/go/text/dj"
 
 //--------------------
 // IMPORTS
@@ -25,6 +25,11 @@ import (
 // Document represents one JSON document.
 type Document struct {
 	root interface{}
+}
+
+// New creates a new empty document.
+func New() *Document {
+	return &Document{}
 }
 
 // Parse reads a raw document from a reader and returns it as

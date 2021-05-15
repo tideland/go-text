@@ -14,11 +14,10 @@ package stringex // import "tideland.dev/go/text/stringex"
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
-
-	"tideland.dev/go/trace/logger"
 )
 
 //--------------------
@@ -230,9 +229,9 @@ func (d *Defaulter) logError(format string, err error) {
 	}
 	format += ": %v"
 	if len(d.id) > 0 {
-		logger.Errorf("(%s) "+format, d.id, err)
+		log.Printf("(%s) "+format, d.id, err)
 	} else {
-		logger.Errorf(format, err)
+		log.Printf(format, err)
 	}
 }
 

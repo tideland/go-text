@@ -9,7 +9,7 @@
 // parse and create documents and access or add values inside of it. Also
 // removing is possible.
 //
-//     myCustomer, err := dynjson.Parse(aCustomerReader)
+//     myCustomer, err := dj.Parse(aCustomerReader)
 //     if err != nil {
 //         ...
 //     }
@@ -18,6 +18,6 @@
 // The value passed to AsString() will panic if an access does not match (the
 // hard way) or return the default value for the type if the value is nil. And
 // there are methods to set values.
-package dynjson // import "tideland.dev/go/text/dynjson"
+package dj // import "tideland.dev/go/text/dj"
 
 // EOF
