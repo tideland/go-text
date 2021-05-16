@@ -36,7 +36,8 @@ func New() *Document {
 // accessible document.
 func Parse(r io.Reader) (*Document, error) {
 	var bs []byte
-	if _, err := r.Read(bs); err != nil {
+	bs, err := io.ReadAll(r)
+	if err != nil {
 		return nil, failure.Annotate(err, "connot read document to parse")
 	}
 	var root interface{}
@@ -46,6 +47,11 @@ func Parse(r io.Reader) (*Document, error) {
 	return &Document{
 		root: root,
 	}, nil
+}
+
+// Len returns the number of elements on the root level of the document.
+func (d *Document) Len() int {
+	return nodeLen(d.root)
 }
 
 // EOF
