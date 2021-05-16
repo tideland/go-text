@@ -5,7 +5,11 @@
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
 
-package dj
+package dj // import "tideland.dev/go/text/dj"
+
+//--------------------
+// NODE HELPERS
+//--------------------
 
 // nodeLen returns the length of the passed node (which can be a single
 // value too).
