@@ -1,9 +1,11 @@
-tideland.dev/go v0.2.0 h1:JC/dwuqqn8NfU2jTNytDCjzbUTsWFGj1V2XfYJn0MKI=
-tideland.dev/go/audit v0.3.0 h1:zUEjdr279z7OE+iFsqz8xQm4KrLRxARmUSg5TzlO2RY=
 tideland.dev/go/audit v0.3.0/go.mod h1:iVQWp3A7czp2I4eH9nHERMMqljQRuwqTKuEzxoj9crI=
-tideland.dev/go/dsa v0.3.0 h1:zIZDlIvVgzspyypZZfJsZqDQMVFAPEoBGbrR2xy942A=
-tideland.dev/go/dsa v0.3.0/go.mod h1:8wQ77lLGRU3IRovPKxjHDBpj48u/QyYR5L3YWQFrwn0=
+tideland.dev/go/audit v0.4.0 h1:OsgeFvmcx9a+GrwjJawRYbQ+qiLcxSkHJ3j9zDzhOMY=
+tideland.dev/go/audit v0.4.0/go.mod h1:iVQWp3A7czp2I4eH9nHERMMqljQRuwqTKuEzxoj9crI=
+tideland.dev/go/dsa v0.3.1 h1:zZLZoe5Wt7NnPFlGtDCwBCnvHofwtNDJwN632WhfZwY=
+tideland.dev/go/dsa v0.3.1/go.mod h1:dxpjEmc6MMHO8C+BM9wDQ8Yy5wEbs/UscUQLHUuY7mo=
 tideland.dev/go/together v0.0.0-20200110213028-8f143e2737a6 h1:RcwIrnqp20h2CJUVIJj3oHgDbUajmXvR5b4u9yVc3hg=
 tideland.dev/go/together v0.0.0-20200110213028-8f143e2737a6/go.mod h1:g+TjCwnKorfsYdJk0XwGYeP3mxSvF1MbnWoQpKk3Y+U=
 tideland.dev/go/trace v0.0.0-20200110203012-77bd5be58e01 h1:KKlJTuzV2lnWnnI2dY6loIO1iHxnL9+akHnXrTVY8wc=
 tideland.dev/go/trace v0.0.0-20200110203012-77bd5be58e01/go.mod h1:f6HlDKt+dTy8DOdvnKmjcqi9EinZ5IZW/zCpAoPUubs=
+tideland.dev/go/trace v0.3.0 h1:wp6i/r0I2DFLlM+yJid+7qcE9/msYk/orUC8yTye2RA=
+tideland.dev/go/trace v0.3.0/go.mod h1:pHdg+nMRNyIVXEA/1Xf5UX8Od51KHk8QNCIw1m3kYrM=
