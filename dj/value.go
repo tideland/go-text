@@ -93,4 +93,20 @@ func (v *Value) IsNil() bool {
 	return v.data == nil
 }
 
+// IsNode provides the check for structures and lists.
+func (v *Value) IsNode() bool {
+	switch v.data.(type) {
+	case []interface{}, map[string]interface{}:
+		return true
+	default:
+		return false
+	}
+}
+
+// Do performs a function on all elements of the value
+// if it is a node.
+func (v *Value) Do(f func(key string, nv *Value) error) error {
+	return nodeDo(v.data, f)
+}
+
 // EOF
