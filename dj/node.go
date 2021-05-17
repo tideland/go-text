@@ -64,4 +64,9 @@ func nodeDo(node interface{}, f func(k string, v *Value) error) error {
 	return nil
 }
 
+// nodeAt finds a node at a given path of keys.
+func nodeAt(raw interface{}, keys ...string) (interface{}, error) {
+	return nil, nil
+}
+
 // EOF

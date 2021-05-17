@@ -54,4 +54,13 @@ func (d *Document) Len() int {
 	return nodeLen(d.root)
 }
 
+// At retrieves a value at a given path of keys.
+func (d *Document) At(keys ...string) (*Value, error) {
+	data, err := nodeAt(d.root, keys...)
+	if err != nil {
+		return nil, err
+	}
+	return newValue(data), nil
+}
+
 // EOF
