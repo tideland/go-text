@@ -5,7 +5,7 @@
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
 
-// Package dynjson provides the dynmic work with JSON documents. It can
+// Package dj provides the dynmic work with JSON documents. It can
 // parse and create documents and access or add values inside of it. Also
 // removing is possible.
 //

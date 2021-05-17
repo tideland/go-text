@@ -5,7 +5,19 @@
 // All rights reserved. Use of this source code is governed
 // by the new BSD license.
 
-package dj
+package dj // import "tideland.dev/go/text/dj"
+
+//--------------------
+// IMPORTS
+//--------------------
+
+import (
+	"strconv"
+)
+
+//--------------------
+// NODE HELPERS
+//--------------------
 
 // nodeLen returns the length of the passed node (which can be a single
 // value too).
@@ -22,6 +34,34 @@ func nodeLen(node interface{}) int {
 		return 1
 	}
 	return 0
+}
+
+// nodeDo performs a function on all elements of the passed node (which
+// can be a single value too).
+func nodeDo(node interface{}, f func(k string, v *Value) error) error {
+	if node == nil {
+		return nil
+	}
+	switch n := node.(type) {
+	case []interface{}:
+		for i, d := range n {
+			k := "#" + strconv.Itoa(i)
+			if err := f(k, newValue(d)); err != nil {
+				return err
+			}
+		}
+		return nil
+	case map[string]interface{}:
+		for k, d := range n {
+			if err := f(k, newValue(d)); err != nil {
+				return err
+			}
+		}
+		return nil
+	case string, int, float64, bool:
+		return f("", newValue(node))
+	}
+	return nil
 }
 
 // EOF
