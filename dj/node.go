@@ -7,7 +7,15 @@
 
 package dj // import "tideland.dev/go/text/dj"
 
-import "strconv" //--------------------
+//--------------------
+// IMPORTS
+//--------------------
+
+import (
+	"strconv"
+)
+
+//--------------------
 // NODE HELPERS
 //--------------------
 
