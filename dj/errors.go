@@ -52,4 +52,7 @@ func (pe *PathError) Unwrap() error {
 	return pe.Err
 }
 
+// ValueError records an error when working with values.
+type ValueError = PathError
+
 // EOF

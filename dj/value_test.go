@@ -20,6 +20,12 @@ import (
 )
 
 //--------------------
+// VARIABLES
+//--------------------
+
+var emptyPath []string = []string{}
+
+//--------------------
 // TESTS
 //--------------------
 
@@ -28,43 +34,43 @@ func TestValueAccess(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	// String.
-	v := dj.NewValue("test")
-	assert.Equal(v.AsString(), "test")
-	v = dj.NewValue(nil)
-	assert.Equal(v.AsString(), "")
-	v = dj.NewValue(true)
+	v := dj.NewValue(emptyPath, "test", nil)
+	assert.Equal(v.String(), "test")
+	v = dj.NewValue(emptyPath, nil, nil)
+	assert.Equal(v.String(), "")
+	v = dj.NewValue(emptyPath, true, nil)
 	assert.PanicsWith(func() {
-		v.AsString()
+		v.String()
 	}, "value is no string")
 
 	// Int.
-	v = dj.NewValue(12345)
-	assert.Equal(v.AsInt(), 12345)
-	v = dj.NewValue(nil)
-	assert.Equal(v.AsInt(), 0)
-	v = dj.NewValue(true)
+	v = dj.NewValue(emptyPath, 12345, nil)
+	assert.Equal(v.Int(), 12345)
+	v = dj.NewValue(emptyPath, nil, nil)
+	assert.Equal(v.Int(), 0)
+	v = dj.NewValue(emptyPath, true, nil)
 	assert.PanicsWith(func() {
-		v.AsInt()
+		v.Int()
 	}, "value is no int")
 
 	// Float64.
-	v = dj.NewValue(123.45)
-	assert.Equal(v.AsFloat64(), 123.45)
-	v = dj.NewValue(nil)
-	assert.Equal(v.AsFloat64(), 0.0)
-	v = dj.NewValue(true)
+	v = dj.NewValue(emptyPath, 123.45, nil)
+	assert.Equal(v.Float64(), 123.45)
+	v = dj.NewValue(emptyPath, nil, nil)
+	assert.Equal(v.Float64(), 0.0)
+	v = dj.NewValue(emptyPath, true, nil)
 	assert.PanicsWith(func() {
-		v.AsFloat64()
+		v.Float64()
 	}, "value is no float64")
 
 	// Bool.
-	v = dj.NewValue(true)
-	assert.Equal(v.AsBool(), true)
-	v = dj.NewValue(nil)
-	assert.Equal(v.AsBool(), false)
-	v = dj.NewValue("true")
+	v = dj.NewValue(emptyPath, true, nil)
+	assert.Equal(v.Bool(), true)
+	v = dj.NewValue(emptyPath, nil, nil)
+	assert.Equal(v.Bool(), false)
+	v = dj.NewValue(emptyPath, "true", nil)
 	assert.PanicsWith(func() {
-		v.AsBool()
+		v.Bool()
 	}, "value is no bool")
 }
 
@@ -72,38 +78,38 @@ func TestValueAccess(t *testing.T) {
 func TestValueSetting(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
-	v := dj.NewValue(nil)
+	v := dj.NewValue(emptyPath, nil, nil)
 
 	v.Set("test")
-	assert.Equal(v.AsString(), "test")
+	assert.Equal(v.String(), "test")
 	v.Set(12345)
-	assert.Equal(v.AsInt(), 12345)
+	assert.Equal(v.Int(), 12345)
 	v.Set(123.45)
-	assert.Equal(v.AsFloat64(), 123.45)
+	assert.Equal(v.Float64(), 123.45)
 	v.Set(true)
-	assert.Equal(v.AsBool(), true)
+	assert.Equal(v.Bool(), true)
 
-	assert.PanicsWith(func() {
-		v.Set(struct{}{})
-	}, "invalid type for value setting")
+	v.Set(struct{}{})
+	assert.True(v.IsError())
+	assert.ErrorContains(v.Error(), "invalid type")
 }
 
 // TestValueTests verifies testing of values.
 func TestValueTests(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
-	v := dj.NewValue(nil)
+	v := dj.NewValue(emptyPath, nil, nil)
 	assert.True(v.IsNil())
 
 	v.Set("test")
 	assert.False(v.IsNil())
 
-	v = dj.NewValue([]interface{}{})
+	v = dj.NewValue(emptyPath, []interface{}{}, nil)
 	assert.True(v.IsNode())
-	v = dj.NewValue(map[string]interface{}{})
+	v = dj.NewValue(emptyPath, map[string]interface{}{}, nil)
 	assert.True(v.IsNode())
 
-	v = dj.NewValue(map[string]int{})
+	v = dj.NewValue(emptyPath, map[string]int{}, nil)
 	assert.False(v.IsNode())
 }
 
@@ -113,9 +119,9 @@ func TestValueIteration(t *testing.T) {
 
 	inA := []interface{}{1, 2, 3, 4, 5}
 	outA := map[string]int{}
-	v := dj.NewValue(inA)
+	v := dj.NewValue(emptyPath, inA, nil)
 	err := v.Do(func(k string, fv *dj.Value) error {
-		outA[k] = fv.AsInt()
+		outA[k] = fv.Int()
 		return nil
 	})
 	assert.NoError(err)
@@ -135,9 +141,9 @@ func TestValueIteration(t *testing.T) {
 		"e": "five",
 	}
 	outB := map[string]string{}
-	v = dj.NewValue(inB)
+	v = dj.NewValue(emptyPath, inB, nil)
 	err = v.Do(func(k string, fv *dj.Value) error {
-		outB[fv.AsString()] = k
+		outB[fv.String()] = k
 		return nil
 	})
 	assert.NoError(err)
@@ -149,16 +155,16 @@ func TestValueIteration(t *testing.T) {
 		"five":  "e",
 	})
 
-	v = dj.NewValue("test")
+	v = dj.NewValue(emptyPath, "test", nil)
 	s := "a "
 	err = v.Do(func(k string, fv *dj.Value) error {
-		s += k + fv.AsString()
+		s += k + fv.String()
 		return nil
 	})
 	assert.NoError(err)
 	assert.Equal(s, "a test")
 
-	err = dj.NewValue(false).Do(func(k string, fv *dj.Value) error {
+	err = dj.NewValue(emptyPath, false, nil).Do(func(k string, fv *dj.Value) error {
 		return errors.New("ouch")
 	})
 	assert.ErrorContains(err, "ouch")

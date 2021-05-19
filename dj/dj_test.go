@@ -23,16 +23,16 @@ import (
 // TESTS
 //--------------------
 
-// TestNew tests the creation of an empty document.
-func TestNew(t *testing.T) {
+// TestNewDocument verifies the creation of an empty document.
+func TestNewDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	doc := dj.New()
 	assert.NotNil(doc)
 }
 
-// TestParse tests the parsing of documents.
-func TestParse(t *testing.T) {
+// TestParseDocument verifies the reading and parsing of an documents.
+func TestParseDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	tests := []struct {
@@ -96,6 +96,49 @@ func TestParse(t *testing.T) {
 			assert.NotNil(doc)
 			assert.Length(doc, test.len)
 		}
+	}
+}
+
+// TestDocumentAt verifies the navigation to a value of a document.
+func TestDocumentAt(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	tests := []struct {
+		description string
+		in          string
+		path        []string
+		value       string
+	}{
+		{
+			description: "single string value",
+			in:          `"test"`,
+			path:        []string{},
+			value:       "test",
+		}, {
+			description: "key/value document",
+			in:          `{"test": "12345"}`,
+			path:        []string{"test"},
+			value:       "12345",
+		}, {
+			description: "list document",
+			in:          `["1", "2", "3", "4", "5"]`,
+			path:        []string{"#2"},
+			value:       "3",
+		}, {
+			description: "nested document",
+			in:          `{"s": "string","a":[1,2,3],"o":{"x":"foo","y":"bar"}}`,
+			path:        []string{"o", "y"},
+			value:       "bar",
+		},
+	}
+	for i, test := range tests {
+		assert.Logf("running test #%d: %s", i, test.description)
+		b := bytes.NewBufferString(test.in)
+		doc, err := dj.Parse(b)
+		assert.NoError(err)
+
+		value := doc.At(test.path...).String()
+		assert.Equal(value, test.value)
 	}
 }
 
