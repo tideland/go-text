@@ -40,7 +40,7 @@ func TestValueAccess(t *testing.T) {
 	assert.Equal(v.String(), "")
 	v = dj.NewValue(emptyPath, true, nil)
 	assert.PanicsWith(func() {
-		v.String()
+		_ = v.String()
 	}, "value is no string")
 
 	// Int.
