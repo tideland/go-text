@@ -36,66 +36,71 @@ func TestParseDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	tests := []struct {
-		description string
-		in          string
-		length      int
-		err         string
+		name   string
+		in     string
+		length int
+		err    string
 	}{
 		{
-			description: "no document",
-			in:          ``,
-			err:         "unexpected end of JSON input",
+			"no document",
+			``,
+			0,
+			"unexpected end of JSON input",
 		}, {
-			description: "empty document",
-			in:          `{}`,
-			length:      0,
-			err:         "",
+			"empty document",
+			`{}`,
+			0,
+			"",
 		}, {
-			description: "single string value",
-			in:          `"test"`,
-			length:      1,
-			err:         "",
+			"single string value",
+			`"test"`,
+			1,
+			"",
 		}, {
-			description: "single integer value",
-			in:          `12345`,
-			length:      1,
-			err:         "",
+			"single integer value",
+			`12345`,
+			1,
+			"",
 		}, {
-			description: "key/value document",
-			in:          `{"test": 12345}`,
-			length:      1,
-			err:         "",
+			"key/value document",
+			`{"test": 12345}`,
+			1,
+			"",
 		}, {
-			description: "list document",
-			in:          `[1, 2, 3, 4, 5]`,
-			length:      5,
-			err:         "",
+			"list document",
+			`[1, 2, 3, 4, 5]`,
+			5,
+			"",
 		}, {
-			description: "nested document",
-			in:          `{"s": "string","l":[1,2,3],"r":[{"x":1,"y":2},{"x":2}]}`,
-			length:      3,
-			err:         "",
+			"nested document",
+			`{"s": "string","l":[1,2,3],"r":[{"x":1,"y":2},{"x":2}]}`,
+			3,
+			"",
 		}, {
-			description: "invalid document (open list)",
-			in:          `{"s": [}`,
-			err:         "invalid character '}' looking for beginning of value",
+			"invalid document (open list)",
+			`{"s": [}`,
+			0,
+			"invalid character '}' looking for beginning of value",
 		}, {
-			description: "invalid document (open structure)",
-			in:          `{"s": {}`,
-			err:         "unexpected end of JSON input",
+			"invalid document (open structure)",
+			`{"s": {}`,
+			0,
+			"unexpected end of JSON input",
 		},
 	}
-	for i, test := range tests {
-		assert.Logf("running test #%d: %s", i, test.description)
-		b := bytes.NewBufferString(test.in)
-		doc, err := dj.Parse(b)
-		if test.err != "" {
-			assert.ErrorContains(err, test.err)
-		} else {
-			assert.NoError(err)
-			assert.NotNil(doc)
-			assert.Length(doc, test.length)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			if test.err != "" {
+				assert.ErrorContains(err, test.err)
+			} else {
+				assert.NoError(err)
+				assert.NotNil(doc)
+				assert.Length(doc, test.length)
+			}
+		})
 	}
 }
 
@@ -104,65 +109,75 @@ func TestDocumentAt(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	tests := []struct {
-		description string
-		in          string
-		path        []string
-		value       string
-		err         string
+		name  string
+		in    string
+		path  []string
+		value string
+		err   string
 	}{
 		{
-			description: "single string value",
-			in:          `"test"`,
-			path:        []string{},
-			value:       "test",
+			"single string value",
+			`"test"`,
+			[]string{},
+			"test",
+			"",
 		}, {
-			description: "key/value document",
-			in:          `{"test": "12345"}`,
-			path:        []string{"test"},
-			value:       "12345",
+			"key/value document",
+			`{"test": "12345"}`,
+			[]string{"test"},
+			"12345",
+			"",
 		}, {
-			description: "list document",
-			in:          `["1", "2", "3", "4", "5"]`,
-			path:        []string{"#2"},
-			value:       "3",
+			"list document",
+			`["1", "2", "3", "4", "5"]`,
+			[]string{"#2"},
+			"3",
+			"",
 		}, {
-			description: "nested document",
-			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
-			path:        []string{"o", "a", "#3"},
-			value:       "4",
+			"nested document",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "#3"},
+			"4",
+			"",
 		}, {
-			description: "not existing path",
-			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
-			path:        []string{"o", "oops", "a"},
-			err:         "path does not exist",
+			"not existing path",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "oops", "a"},
+			"",
+			"path does not exist",
 		}, {
-			description: "path too long",
-			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
-			path:        []string{"o", "oops", "a"},
-			err:         "path too long",
+			"path too long",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "x", "oops"},
+			"",
+			"path too long",
 		}, {
-			description: "invalid index - no number",
-			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
-			path:        []string{"o", "a", "oops"},
-			err:         "no index",
+			"invalid index - no number",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "oops"},
+			"",
+			"no index",
 		}, {
-			description: "invalid index - invalid number",
-			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
-			path:        []string{"o", "a", "#999"},
-			err:         "invalid array index",
+			"invalid index - invalid number",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "#999"},
+			"",
+			"invalid array index",
 		},
 	}
-	for i, test := range tests {
-		assert.Logf("running test #%d: %s", i, test.description)
-		b := bytes.NewBufferString(test.in)
-		doc, err := dj.Parse(b)
-		assert.NoError(err)
-		value := doc.At(test.path...)
-		if test.err != "" {
-			assert.ErrorContains(value.Error(), test.err)
-		} else {
-			assert.Equal(value.String(), test.value)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			assert.NoError(err)
+			value := doc.At(test.path...)
+			if test.err != "" {
+				assert.ErrorContains(value.Error(), test.err)
+			} else {
+				assert.Equal(value.String(), test.value)
+			}
+		})
 	}
 }
 
