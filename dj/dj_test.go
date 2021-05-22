@@ -38,7 +38,7 @@ func TestParseDocument(t *testing.T) {
 	tests := []struct {
 		description string
 		in          string
-		len         int
+		length      int
 		err         string
 	}{
 		{
@@ -48,32 +48,32 @@ func TestParseDocument(t *testing.T) {
 		}, {
 			description: "empty document",
 			in:          `{}`,
-			len:         0,
+			length:      0,
 			err:         "",
 		}, {
 			description: "single string value",
 			in:          `"test"`,
-			len:         1,
+			length:      1,
 			err:         "",
 		}, {
 			description: "single integer value",
 			in:          `12345`,
-			len:         1,
+			length:      1,
 			err:         "",
 		}, {
 			description: "key/value document",
 			in:          `{"test": 12345}`,
-			len:         1,
+			length:      1,
 			err:         "",
 		}, {
 			description: "list document",
 			in:          `[1, 2, 3, 4, 5]`,
-			len:         5,
+			length:      5,
 			err:         "",
 		}, {
 			description: "nested document",
 			in:          `{"s": "string","l":[1,2,3],"r":[{"x":1,"y":2},{"x":2}]}`,
-			len:         3,
+			length:      3,
 			err:         "",
 		}, {
 			description: "invalid document (open list)",
@@ -94,7 +94,7 @@ func TestParseDocument(t *testing.T) {
 		} else {
 			assert.NoError(err)
 			assert.NotNil(doc)
-			assert.Length(doc, test.len)
+			assert.Length(doc, test.length)
 		}
 	}
 }
@@ -108,6 +108,7 @@ func TestDocumentAt(t *testing.T) {
 		in          string
 		path        []string
 		value       string
+		err         string
 	}{
 		{
 			description: "single string value",
@@ -126,9 +127,29 @@ func TestDocumentAt(t *testing.T) {
 			value:       "3",
 		}, {
 			description: "nested document",
-			in:          `{"s": "string","a":[1,2,3],"o":{"x":"foo","y":"bar"}}`,
-			path:        []string{"o", "y"},
-			value:       "bar",
+			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			path:        []string{"o", "a", "#3"},
+			value:       "4",
+		}, {
+			description: "not existing path",
+			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			path:        []string{"o", "oops", "a"},
+			err:         "path does not exist",
+		}, {
+			description: "path too long",
+			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			path:        []string{"o", "oops", "a"},
+			err:         "path too long",
+		}, {
+			description: "invalid index - no number",
+			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			path:        []string{"o", "a", "oops"},
+			err:         "no index",
+		}, {
+			description: "invalid index - invalid number",
+			in:          `{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			path:        []string{"o", "a", "#999"},
+			err:         "invalid array index",
 		},
 	}
 	for i, test := range tests {
@@ -136,9 +157,12 @@ func TestDocumentAt(t *testing.T) {
 		b := bytes.NewBufferString(test.in)
 		doc, err := dj.Parse(b)
 		assert.NoError(err)
-
-		value := doc.At(test.path...).String()
-		assert.Equal(value, test.value)
+		value := doc.At(test.path...)
+		if test.err != "" {
+			assert.ErrorContains(value.Error(), test.err)
+		} else {
+			assert.Equal(value.String(), test.value)
+		}
 	}
 }
 
