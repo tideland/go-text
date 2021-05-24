@@ -89,6 +89,7 @@ func TestParseDocument(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			defer assert.SetFailable(t)()
 			b := bytes.NewBufferString(test.in)
@@ -152,13 +153,13 @@ func TestDocumentAt(t *testing.T) {
 			"",
 			"path too long",
 		}, {
-			"invalid index - no number",
+			"invalid index / no number",
 			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
 			[]string{"o", "a", "oops"},
 			"",
 			"no index",
 		}, {
-			"invalid index - invalid number",
+			"invalid index / invalid number",
 			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
 			[]string{"o", "a", "#999"},
 			"",
@@ -166,6 +167,7 @@ func TestDocumentAt(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			defer assert.SetFailable(t)()
 			b := bytes.NewBufferString(test.in)
