@@ -12,8 +12,8 @@ package dj // import "tideland.dev/go/text/dj"
 //--------------------
 
 // NewValue wraps the private value constructor for testing.
-func NewValue(data interface{}) *Value {
-	return newValue(data)
+func NewValue(path []string, data interface{}, err error) *Value {
+	return newValue(path, data, err)
 }
 
 // EOF

@@ -14,8 +14,6 @@ package dj // import "tideland.dev/go/text/dj"
 import (
 	"encoding/json"
 	"io"
-
-	"tideland.dev/go/trace/failure"
 )
 
 //--------------------
@@ -38,11 +36,17 @@ func Parse(r io.Reader) (*Document, error) {
 	var bs []byte
 	bs, err := io.ReadAll(r)
 	if err != nil {
-		return nil, failure.Annotate(err, "connot read document to parse")
+		return nil, &DocumentError{
+			Action: "read document to parse",
+			Err:    err,
+		}
 	}
 	var root interface{}
 	if err := json.Unmarshal(bs, &root); err != nil {
-		return nil, failure.Annotate(err, "cannot unmarshal document")
+		return nil, &DocumentError{
+			Action: "unmarshal document",
+			Err:    err,
+		}
 	}
 	return &Document{
 		root: root,
@@ -52,6 +56,15 @@ func Parse(r io.Reader) (*Document, error) {
 // Len returns the number of elements on the root level of the document.
 func (d *Document) Len() int {
 	return nodeLen(d.root)
+}
+
+// At retrieves a value at a given path of keys.
+func (d *Document) At(path ...string) *Value {
+	data, err := nodeAt(d.root, []string{}, path)
+	if err != nil {
+		return newValue(path, nil, err)
+	}
+	return newValue(path, data, nil)
 }
 
 // EOF

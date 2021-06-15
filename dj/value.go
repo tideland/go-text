@@ -8,6 +8,14 @@
 package dj // import "tideland.dev/go/text/dj"
 
 //--------------------
+// IMPORTS
+//--------------------
+
+import (
+	"errors"
+)
+
+//--------------------
 // VALUE
 //--------------------
 
@@ -15,13 +23,17 @@ package dj // import "tideland.dev/go/text/dj"
 // Based on the creation it also can be a structure or list and so allows to
 // navigate deeper.
 type Value struct {
+	path []string
 	data interface{}
+	err  error
 }
 
 // newValue creates a values based on the passed data.
-func newValue(data interface{}) *Value {
+func newValue(path []string, data interface{}, err error) *Value {
 	return &Value{
+		path: path,
 		data: data,
+		err:  err,
 	}
 }
 
@@ -30,18 +42,24 @@ func (v *Value) Set(data interface{}) {
 	switch d := data.(type) {
 	case string, int, float64, bool:
 		v.data = d
+		v.err = nil
 		return
 	default:
 		if data == nil {
 			v.data = nil
+			v.err = nil
 			return
 		}
+		v.data = nil
+		v.err = &ValueError{
+			Mode: "set",
+			Err:  errors.New("invalid type"),
+		}
 	}
-	panic("invalid type for value setting")
 }
 
-// AsString returns a potential string value or panics.
-func (v *Value) AsString() string {
+// String returns a potential string value or panics.
+func (v *Value) String() string {
 	if v.data == nil {
 		return ""
 	}
@@ -52,8 +70,8 @@ func (v *Value) AsString() string {
 	return s
 }
 
-// AsInt returns a potential int value or panics.
-func (v *Value) AsInt() int {
+// Int returns a potential int value or panics.
+func (v *Value) Int() int {
 	if v.data == nil {
 		return 0
 	}
@@ -65,7 +83,7 @@ func (v *Value) AsInt() int {
 }
 
 // AsFloat64 returns a potential float64 value or panics.
-func (v *Value) AsFloat64() float64 {
+func (v *Value) Float64() float64 {
 	if v.data == nil {
 		return 0.0
 	}
@@ -77,7 +95,7 @@ func (v *Value) AsFloat64() float64 {
 }
 
 // AsBool returns a potential bool value or panics.
-func (v *Value) AsBool() bool {
+func (v *Value) Bool() bool {
 	if v.data == nil {
 		return false
 	}
@@ -93,6 +111,16 @@ func (v *Value) IsNil() bool {
 	return v.data == nil
 }
 
+// IsError provides the check for an error value.
+func (v *Value) IsError() bool {
+	return v.err != nil
+}
+
+// Error returns a potential error inside in the value.
+func (v *Value) Error() error {
+	return v.err
+}
+
 // IsNode provides the check for structures and lists.
 func (v *Value) IsNode() bool {
 	switch v.data.(type) {
@@ -106,7 +134,7 @@ func (v *Value) IsNode() bool {
 // Do performs a function on all elements of the value
 // if it is a node.
 func (v *Value) Do(f func(key string, nv *Value) error) error {
-	return nodeDo(v.data, f)
+	return nodeDo(v.path, v.data, f)
 }
 
 // EOF

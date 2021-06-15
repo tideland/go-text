@@ -23,79 +23,163 @@ import (
 // TESTS
 //--------------------
 
-// TestNew tests the creation of an empty document.
-func TestNew(t *testing.T) {
+// TestNewDocument verifies the creation of an empty document.
+func TestNewDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	doc := dj.New()
 	assert.NotNil(doc)
 }
 
-// TestParse tests the parsing of documents.
-func TestParse(t *testing.T) {
+// TestParseDocument verifies the reading and parsing of an documents.
+func TestParseDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	tests := []struct {
-		description string
-		in          string
-		len         int
-		err         string
+		name   string
+		in     string
+		length int
+		err    string
 	}{
 		{
-			description: "no document",
-			in:          ``,
-			err:         "unexpected end of JSON input",
+			"no document",
+			``,
+			0,
+			"unexpected end of JSON input",
 		}, {
-			description: "empty document",
-			in:          `{}`,
-			len:         0,
-			err:         "",
+			"empty document",
+			`{}`,
+			0,
+			"",
 		}, {
-			description: "single string value",
-			in:          `"test"`,
-			len:         1,
-			err:         "",
+			"single string value",
+			`"test"`,
+			1,
+			"",
 		}, {
-			description: "single integer value",
-			in:          `12345`,
-			len:         1,
-			err:         "",
+			"single integer value",
+			`12345`,
+			1,
+			"",
 		}, {
-			description: "key/value document",
-			in:          `{"test": 12345}`,
-			len:         1,
-			err:         "",
+			"key/value document",
+			`{"test": 12345}`,
+			1,
+			"",
 		}, {
-			description: "list document",
-			in:          `[1, 2, 3, 4, 5]`,
-			len:         5,
-			err:         "",
+			"list document",
+			`[1, 2, 3, 4, 5]`,
+			5,
+			"",
 		}, {
-			description: "nested document",
-			in:          `{"s": "string","l":[1,2,3],"r":[{"x":1,"y":2},{"x":2}]}`,
-			len:         3,
-			err:         "",
+			"nested document",
+			`{"s": "string","l":[1,2,3],"r":[{"x":1,"y":2},{"x":2}]}`,
+			3,
+			"",
 		}, {
-			description: "invalid document (open list)",
-			in:          `{"s": [}`,
-			err:         "invalid character '}' looking for beginning of value",
+			"invalid document (open list)",
+			`{"s": [}`,
+			0,
+			"invalid character '}' looking for beginning of value",
 		}, {
-			description: "invalid document (open structure)",
-			in:          `{"s": {}`,
-			err:         "unexpected end of JSON input",
+			"invalid document (open structure)",
+			`{"s": {}`,
+			0,
+			"unexpected end of JSON input",
 		},
 	}
-	for i, test := range tests {
-		assert.Logf("running test #%d: %s", i, test.description)
-		b := bytes.NewBufferString(test.in)
-		doc, err := dj.Parse(b)
-		if test.err != "" {
-			assert.ErrorContains(err, test.err)
-		} else {
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			if test.err != "" {
+				assert.ErrorContains(err, test.err)
+			} else {
+				assert.NoError(err)
+				assert.NotNil(doc)
+				assert.Length(doc, test.length)
+			}
+		})
+	}
+}
+
+// TestDocumentAt verifies the navigation to a value of a document.
+func TestDocumentAt(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	tests := []struct {
+		name  string
+		in    string
+		path  []string
+		value string
+		err   string
+	}{
+		{
+			"single string value",
+			`"test"`,
+			[]string{},
+			"test",
+			"",
+		}, {
+			"key/value document",
+			`{"test": "12345"}`,
+			[]string{"test"},
+			"12345",
+			"",
+		}, {
+			"list document",
+			`["1", "2", "3", "4", "5"]`,
+			[]string{"#2"},
+			"3",
+			"",
+		}, {
+			"nested document",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "#3"},
+			"4",
+			"",
+		}, {
+			"not existing path",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "oops", "a"},
+			"",
+			"path does not exist",
+		}, {
+			"path too long",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "x", "oops"},
+			"",
+			"path too long",
+		}, {
+			"invalid index / no number",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "oops"},
+			"",
+			"no index",
+		}, {
+			"invalid index / invalid number",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			[]string{"o", "a", "#999"},
+			"",
+			"invalid array index",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
 			assert.NoError(err)
-			assert.NotNil(doc)
-			assert.Length(doc, test.len)
-		}
+			value := doc.At(test.path...)
+			if test.err != "" {
+				assert.ErrorContains(value.Error(), test.err)
+			} else {
+				assert.Equal(value.String(), test.value)
+			}
+		})
 	}
 }
 

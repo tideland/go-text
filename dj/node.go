@@ -12,6 +12,7 @@ package dj // import "tideland.dev/go/text/dj"
 //--------------------
 
 import (
+	"errors"
 	"strconv"
 )
 
@@ -19,17 +20,17 @@ import (
 // NODE HELPERS
 //--------------------
 
-// nodeLen returns the length of the passed node (which can be a single
+// nodeLen returns the length of the passed data (which can be a single
 // value too).
-func nodeLen(node interface{}) int {
-	if node == nil {
+func nodeLen(data interface{}) int {
+	if data == nil {
 		return 0
 	}
-	switch n := node.(type) {
+	switch d := data.(type) {
 	case []interface{}:
-		return len(n)
+		return len(d)
 	case map[string]interface{}:
-		return len(n)
+		return len(d)
 	case string, int, float64, bool:
 		return 1
 	}
@@ -38,30 +39,89 @@ func nodeLen(node interface{}) int {
 
 // nodeDo performs a function on all elements of the passed node (which
 // can be a single value too).
-func nodeDo(node interface{}, f func(k string, v *Value) error) error {
-	if node == nil {
+func nodeDo(path []string, data interface{}, f func(k string, v *Value) error) error {
+	if data == nil {
 		return nil
 	}
-	switch n := node.(type) {
+	switch d := data.(type) {
 	case []interface{}:
-		for i, d := range n {
+		for i, d := range d {
 			k := "#" + strconv.Itoa(i)
-			if err := f(k, newValue(d)); err != nil {
+			if err := f(k, newValue(path, d, nil)); err != nil {
 				return err
 			}
 		}
 		return nil
 	case map[string]interface{}:
-		for k, d := range n {
-			if err := f(k, newValue(d)); err != nil {
+		for k, d := range d {
+			if err := f(k, newValue(path, d, nil)); err != nil {
 				return err
 			}
 		}
 		return nil
 	case string, int, float64, bool:
-		return f("", newValue(node))
+		return f("", newValue(path, data, nil))
 	}
 	return nil
+}
+
+// nodeAt finds a node at a given path of keys. It works recursive and
+// collects the already done path for a possible error.
+func nodeAt(data interface{}, done, path []string) (interface{}, error) {
+	if len(path) == 0 {
+		return data, nil
+	}
+	switch d := data.(type) {
+	case map[string]interface{}:
+		value, ok := d[path[0]]
+		if !ok {
+			return nil, &PathError{
+				Mode: "object",
+				Path: append(done, path[0]),
+				Err:  errors.New("path does not exist"),
+			}
+		}
+		if len(path) > 1 {
+			return nodeAt(value, append(done, path[0]), path[1:])
+		}
+		return value, nil
+	case []interface{}:
+		index, err := indexOf(path[0])
+		if err != nil {
+			return nil, &PathError{
+				Mode: "array",
+				Path: append(done, path[0]),
+				Err:  err,
+			}
+		}
+		if index < 0 || index > len(d)-1 {
+			return nil, &PathError{
+				Mode: "array",
+				Path: append(done, path[0]),
+				Err:  errors.New("invalid array index"),
+			}
+		}
+		value := d[index]
+		if len(path) > 1 {
+			return nodeAt(value, append(done, path[0]), path[1:])
+		}
+		return value, nil
+	default:
+		return nil, &PathError{
+			Mode: "value",
+			Path: append(done, path...),
+			Err:  errors.New("path too long"),
+		}
+	}
+}
+
+// indexOf tries to convert an index string like "#5" into an integer
+// index like 5.
+func indexOf(index string) (int, error) {
+	if index[0] != '#' {
+		return 0, errors.New("no index")
+	}
+	return strconv.Atoi(index[1:])
 }
 
 // EOF
