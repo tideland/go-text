@@ -131,6 +131,16 @@ func (v *Value) IsNode() bool {
 	}
 }
 
+// At retrieves a value at a given path of keys.
+func (v *Value) At(path ...string) *Value {
+	jpath := append(v.path, path...)
+	data, err := nodeAt(v.data, []string{}, path)
+	if err != nil {
+		return newValue(jpath, nil, err)
+	}
+	return newValue(jpath, data, nil)
+}
+
 // Do performs a function on all elements of the value
 // if it is a node.
 func (v *Value) Do(f func(key string, nv *Value) error) error {

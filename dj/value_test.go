@@ -12,6 +12,7 @@ package dj_test // import "tideland.dev/go/text/dj"
 //--------------------
 
 import (
+	"bytes"
 	"errors"
 	"testing"
 
@@ -168,6 +169,85 @@ func TestValueIteration(t *testing.T) {
 		return errors.New("ouch")
 	})
 	assert.ErrorContains(err, "ouch")
+}
+
+// TestValueAt verifies the navigation to a value of a value.
+func TestValueAt(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	tests := []struct {
+		name  string
+		in    string
+		path  []string
+		value string
+		err   string
+	}{
+		{
+			"single string value",
+			`{"root":["test"]}`,
+			[]string{"#0"},
+			"test",
+			"",
+		}, {
+			"key/value document",
+			`{"root":{"test": "12345"}}`,
+			[]string{"test"},
+			"12345",
+			"",
+		}, {
+			"list document",
+			`{"root":["1", "2", "3", "4", "5"]}`,
+			[]string{"#2"},
+			"3",
+			"",
+		}, {
+			"nested document",
+			`{"root":{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}}`,
+			[]string{"o", "a", "#3"},
+			"4",
+			"",
+		}, {
+			"not existing path",
+			`{"root":{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}}`,
+			[]string{"o", "oops", "a"},
+			"",
+			"path does not exist",
+		}, {
+			"path too long",
+			`{"root":{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}}`,
+			[]string{"o", "x", "oops"},
+			"",
+			"path too long",
+		}, {
+			"invalid index / no number",
+			`{"root":{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}}`,
+			[]string{"o", "a", "oops"},
+			"",
+			"no index",
+		}, {
+			"invalid index / invalid number",
+			`{"root":{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}}`,
+			[]string{"o", "a", "#999"},
+			"",
+			"invalid array index",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			assert.NoError(err, "in:", test.in)
+			root := doc.At("root")
+			value := root.At(test.path...)
+			if test.err != "" {
+				assert.ErrorContains(value.Error(), test.err)
+			} else {
+				assert.Equal(value.String(), test.value)
+			}
+		})
+	}
 }
 
 // EOF
