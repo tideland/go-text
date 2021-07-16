@@ -13,6 +13,26 @@ package dj // import "tideland.dev/go/text/dj"
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
+	"strconv"
+)
+
+//--------------------
+// CONSTANTS
+//--------------------
+
+// ValueType defines the type of a value.
+type ValueType int
+
+const (
+	ValueTypeNull ValueType = iota
+	ValueTypeObject
+	ValueTypeArray
+	ValueTypeString
+	ValueTypeInt
+	ValueTypeFloat64
+	ValueTypeBool
 )
 
 //--------------------
@@ -58,57 +78,134 @@ func (v *Value) Set(data interface{}) {
 	}
 }
 
-// String returns a potential string value or panics.
-func (v *Value) String() string {
-	if v.data == nil {
-		return ""
-	}
-	s, ok := v.data.(string)
-	if !ok {
-		panic("value is no string")
-	}
-	return s
+// IsUndefined returns true if the value contains no data.
+func (v *Value) IsUndefined() bool {
+	return v.data == nil
 }
 
-// Int returns a potential int value or panics.
-func (v *Value) Int() int {
+// Type returns the type of the value.
+func (v *Value) Type() ValueType {
 	if v.data == nil {
+		return ValueTypeNull
+	}
+	switch v.data.(type) {
+	case map[string]interface{}:
+		return ValueTypeObject
+	case []interface{}:
+		return ValueTypeArray
+	case string:
+		return ValueTypeString
+	case int:
+		return ValueTypeInt
+	case float64:
+		return ValueTypeFloat64
+	case bool:
+		return ValueTypeBool
+	}
+	panic("invalid value type")
+}
+
+// AsString returns the value as string.
+func (v *Value) AsString(dv string) string {
+	if v.IsUndefined() {
+		return dv
+	}
+	switch tv := v.data.(type) {
+	case string:
+		return tv
+	case int:
+		return strconv.Itoa(tv)
+	case float64:
+		return strconv.FormatFloat(tv, 'g', -1, 64)
+	case bool:
+		return strconv.FormatBool(tv)
+	}
+	return dv
+}
+
+// AsInt returns the value as int.
+func (v *Value) AsInt(dv int) int {
+	if v.IsUndefined() {
+		return dv
+	}
+	switch tv := v.data.(type) {
+	case string:
+		i, err := strconv.Atoi(tv)
+		if err != nil {
+			return dv
+		}
+		return i
+	case int:
+		return tv
+	case float64:
+		return int(tv)
+	case bool:
+		if tv {
+			return 1
+		}
 		return 0
 	}
-	i, ok := v.data.(int)
-	if !ok {
-		panic("value is no int")
-	}
-	return i
+	return dv
 }
 
-// AsFloat64 returns a potential float64 value or panics.
-func (v *Value) Float64() float64 {
-	if v.data == nil {
+// AsFloat64 returns the value as float64.
+func (v *Value) AsFloat64(dv float64) float64 {
+	if v.IsUndefined() {
+		return dv
+	}
+	switch tv := v.data.(type) {
+	case string:
+		f, err := strconv.ParseFloat(tv, 64)
+		if err != nil {
+			return dv
+		}
+		return f
+	case int:
+		return float64(tv)
+	case float64:
+		return tv
+	case bool:
+		if tv {
+			return 1.0
+		}
 		return 0.0
 	}
-	f, ok := v.data.(float64)
-	if !ok {
-		panic("value is no float64")
-	}
-	return f
+	return dv
 }
 
-// AsBool returns a potential bool value or panics.
-func (v *Value) Bool() bool {
-	if v.data == nil {
-		return false
+// AsBool returns the value as bool.
+func (v *Value) AsBool(dv bool) bool {
+	if v.IsUndefined() {
+		return dv
 	}
-	b, ok := v.data.(bool)
-	if !ok {
-		panic("value is no bool")
+	switch tv := v.data.(type) {
+	case string:
+		b, err := strconv.ParseBool(tv)
+		if err != nil {
+			return dv
+		}
+		return b
+	case int:
+		return tv == 1
+	case float64:
+		return tv == 1.0
+	case bool:
+		return tv
 	}
-	return b
+	return dv
 }
 
-// IsNil provides the check for a nil value.
-func (v *Value) IsNil() bool {
-	return v.data == nil
+// String implements fmt.Stringer.
+func (v *Value) String() string {
+	if v.IsUndefined() {
+		return "null"
+	}
+	return fmt.Sprintf("%v", v.data)
+}
+
+// DeepEqual compares the value with the given one.
+func (v *Value) DeepEqual(to *Value) bool {
+	return reflect.DeepEqual(v.data, to.data)
 }
 
 // IsError provides the check for an error value.
@@ -119,16 +216,6 @@ func (v *Value) IsError() bool {
 // Error returns a potential error inside in the value.
 func (v *Value) Error() error {
 	return v.err
-}
-
-// IsNode provides the check for structures and lists.
-func (v *Value) IsNode() bool {
-	switch v.data.(type) {
-	case []interface{}, map[string]interface{}:
-		return true
-	default:
-		return false
-	}
 }
 
 // At retrieves a value at a given path of keys.
