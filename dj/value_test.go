@@ -113,28 +113,28 @@ func TestValueTests(t *testing.T) {
 
 	v := dj.NewValue(emptyPath, nil, nil)
 	assert.True(v.IsUndefined())
-	assert.Equal(v.Type(), dj.ValueTypeNull)
+	assert.Equal(v.Type(), dj.NodeTypeNull)
 
 	v.Set("test")
 	assert.False(v.IsUndefined())
 
 	v = dj.NewValue(emptyPath, map[string]interface{}{}, nil)
-	assert.Equal(v.Type(), dj.ValueTypeObject)
+	assert.Equal(v.Type(), dj.NodeTypeObject)
 
 	v = dj.NewValue(emptyPath, []interface{}{}, nil)
-	assert.Equal(v.Type(), dj.ValueTypeArray)
+	assert.Equal(v.Type(), dj.NodeTypeArray)
 
 	v = dj.NewValue(emptyPath, "test", nil)
-	assert.Equal(v.Type(), dj.ValueTypeString)
+	assert.Equal(v.Type(), dj.NodeTypeString)
 
 	v = dj.NewValue(emptyPath, 12345, nil)
-	assert.Equal(v.Type(), dj.ValueTypeInt)
+	assert.Equal(v.Type(), dj.NodeTypeInt)
 
 	v = dj.NewValue(emptyPath, 12.345, nil)
-	assert.Equal(v.Type(), dj.ValueTypeFloat64)
+	assert.Equal(v.Type(), dj.NodeTypeFloat64)
 
 	v = dj.NewValue(emptyPath, true, nil)
-	assert.Equal(v.Type(), dj.ValueTypeBool)
+	assert.Equal(v.Type(), dj.NodeTypeBool)
 }
 
 // TestValueIteration verifies the iteration over value data.
