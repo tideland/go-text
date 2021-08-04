@@ -53,11 +53,6 @@ func Parse(r io.Reader) (*Document, error) {
 	}, nil
 }
 
-// Len returns the number of elements on the root level of the document.
-func (d *Document) Len() int {
-	return nodeLen(d.root)
-}
-
 // At retrieves a value at a given path of keys.
 func (d *Document) At(path ...string) *Value {
 	data, err := nodeAt(d.root, []string{}, path)
@@ -65,6 +60,12 @@ func (d *Document) At(path ...string) *Value {
 		return newValue(path, nil, err)
 	}
 	return newValue(path, data, nil)
+}
+
+// Root is a convenience varient of At() for the highest
+// level value.
+func (d *Document) Root() *Value {
+	return newValue([]string{}, d.root, nil)
 }
 
 // EOF

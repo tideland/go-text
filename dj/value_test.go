@@ -107,8 +107,8 @@ func TestValueSetting(t *testing.T) {
 	assert.ErrorContains(v.Error(), "invalid type")
 }
 
-// TestValueTests verifies testing of values.
-func TestValueTests(t *testing.T) {
+// TestValueTypes verifies testing of values.
+func TestValueTypes(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
 	v := dj.NewValue(emptyPath, nil, nil)
@@ -128,10 +128,10 @@ func TestValueTests(t *testing.T) {
 	assert.Equal(v.Type(), dj.NodeTypeString)
 
 	v = dj.NewValue(emptyPath, 12345, nil)
-	assert.Equal(v.Type(), dj.NodeTypeInt)
+	assert.Equal(v.Type(), dj.NodeTypeNumber)
 
 	v = dj.NewValue(emptyPath, 12.345, nil)
-	assert.Equal(v.Type(), dj.NodeTypeFloat64)
+	assert.Equal(v.Type(), dj.NodeTypeNumber)
 
 	v = dj.NewValue(emptyPath, true, nil)
 	assert.Equal(v.Type(), dj.NodeTypeBool)

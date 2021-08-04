@@ -31,7 +31,7 @@ func TestNewDocument(t *testing.T) {
 	assert.NotNil(doc)
 }
 
-// TestParseDocument verifies the reading and parsing of an documents.
+// TestParseDocument verifies the parsing of a document.
 func TestParseDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
@@ -99,7 +99,7 @@ func TestParseDocument(t *testing.T) {
 			} else {
 				assert.NoError(err)
 				assert.NotNil(doc)
-				assert.Length(doc, test.length)
+				assert.Length(doc.Root(), test.length)
 			}
 		})
 	}

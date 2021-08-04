@@ -17,8 +17,46 @@ import (
 )
 
 //--------------------
+// CONSTANTS
+//--------------------
+
+// NodeType describe the JSON type of node, may it be the
+// root or any lower one.
+type NodeType int
+
+const (
+	NodeTypeNull NodeType = iota
+	NodeTypeObject
+	NodeTypeArray
+	NodeTypeString
+	NodeTypeNumber
+	NodeTypeBool
+)
+
+//--------------------
 // NODE HELPERS
 //--------------------
+
+// nodeType determines the JSON type of a node (root or value).
+func nodeType(data interface{}) NodeType {
+	if data == nil {
+		return NodeTypeNull
+	}
+	switch data.(type) {
+	case map[string]interface{}:
+		return NodeTypeObject
+	case []interface{}:
+		return NodeTypeArray
+	case string:
+		return NodeTypeString
+	case int, float64:
+		return NodeTypeNumber
+	case bool:
+		return NodeTypeBool
+	}
+	panic("invalid node type")
+
+}
 
 // nodeLen returns the length of the passed data (which can be a single
 // value too).
