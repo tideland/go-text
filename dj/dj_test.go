@@ -183,4 +183,48 @@ func TestDocumentAt(t *testing.T) {
 	}
 }
 
+// TestDocumentRoot verifies the access to the root value of a document.
+func TestDocumentRoot(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	tests := []struct {
+		name     string
+		in       string
+		nodeType dj.NodeType
+		err      string
+	}{
+		{
+			"single string value",
+			`"test"`,
+			dj.NodeTypeString,
+			"",
+		}, {
+			"list document",
+			`["1", "2", "3", "4", "5"]`,
+			dj.NodeTypeArray,
+			"",
+		}, {
+			"nested document",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			dj.NodeTypeObject,
+			"",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			assert.NoError(err)
+			value := doc.Root()
+			if test.err != "" {
+				assert.ErrorContains(value.Error(), test.err)
+			} else {
+				assert.Equal(value.Type(), test.nodeType)
+			}
+		})
+	}
+}
+
 // EOF
