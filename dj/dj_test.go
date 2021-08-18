@@ -31,7 +31,7 @@ func TestNewDocument(t *testing.T) {
 	assert.NotNil(doc)
 }
 
-// TestParseDocument verifies the reading and parsing of an documents.
+// TestParseDocument verifies the parsing of a document.
 func TestParseDocument(t *testing.T) {
 	assert := asserts.NewTesting(t, asserts.FailStop)
 
@@ -99,7 +99,7 @@ func TestParseDocument(t *testing.T) {
 			} else {
 				assert.NoError(err)
 				assert.NotNil(doc)
-				assert.Length(doc, test.length)
+				assert.Length(doc.Root(), test.length)
 			}
 		})
 	}
@@ -178,6 +178,50 @@ func TestDocumentAt(t *testing.T) {
 				assert.ErrorContains(value.Error(), test.err)
 			} else {
 				assert.Equal(value.String(), test.value)
+			}
+		})
+	}
+}
+
+// TestDocumentRoot verifies the access to the root value of a document.
+func TestDocumentRoot(t *testing.T) {
+	assert := asserts.NewTesting(t, asserts.FailStop)
+
+	tests := []struct {
+		name     string
+		in       string
+		nodeType dj.NodeType
+		err      string
+	}{
+		{
+			"single string value",
+			`"test"`,
+			dj.NodeTypeString,
+			"",
+		}, {
+			"list document",
+			`["1", "2", "3", "4", "5"]`,
+			dj.NodeTypeArray,
+			"",
+		}, {
+			"nested document",
+			`{"s": "string","o":{"x":"foo","a":["1","2","3","4","5"]}}`,
+			dj.NodeTypeObject,
+			"",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			defer assert.SetFailable(t)()
+			b := bytes.NewBufferString(test.in)
+			doc, err := dj.Parse(b)
+			assert.NoError(err)
+			value := doc.Root()
+			if test.err != "" {
+				assert.ErrorContains(value.Error(), test.err)
+			} else {
+				assert.Equal(value.Type(), test.nodeType)
 			}
 		})
 	}

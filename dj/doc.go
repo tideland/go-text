@@ -13,7 +13,7 @@
 //     if err != nil {
 //         ...
 //     }
-//     firstStreet := myCustomer.At("addresses", "#0", "street").AsString()
+//     firstStreet := myCustomer.At("addresses", "#0", "street").AsString("default")
 //
 // The value passed to AsString() will panic if an access does not match (the
 // hard way) or return the default value for the type if the value is nil. And

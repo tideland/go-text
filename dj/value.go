@@ -19,23 +19,6 @@ import (
 )
 
 //--------------------
-// CONSTANTS
-//--------------------
-
-// ValueType defines the type of a value.
-type ValueType int
-
-const (
-	ValueTypeNull ValueType = iota
-	ValueTypeObject
-	ValueTypeArray
-	ValueTypeString
-	ValueTypeInt
-	ValueTypeFloat64
-	ValueTypeBool
-)
-
-//--------------------
 // VALUE
 //--------------------
 
@@ -83,26 +66,15 @@ func (v *Value) IsUndefined() bool {
 	return v.data == nil
 }
 
-// Type returns the type of the value.
-func (v *Value) Type() ValueType {
-	if v.data == nil {
-		return ValueTypeNull
-	}
-	switch v.data.(type) {
-	case map[string]interface{}:
-		return ValueTypeObject
-	case []interface{}:
-		return ValueTypeArray
-	case string:
-		return ValueTypeString
-	case int:
-		return ValueTypeInt
-	case float64:
-		return ValueTypeFloat64
-	case bool:
-		return ValueTypeBool
-	}
-	panic("invalid value type")
+// Type returns the JSON type of the value.
+func (v *Value) Type() NodeType {
+	return nodeType(v.data)
+}
+
+// Len return 1 in case of simple value types of the number of
+// elements in case of objects or arrays.
+func (v *Value) Len() int {
+	return nodeLen(v.data)
 }
 
 // AsString returns the value as string.
